@@ -9,5 +9,6 @@ int main(){
  string  numPlayers;
  cin >> numPlayers;
  Gameplay game;
+ cout << endl;
  game.play(stoi(numPlayers));
 }
