@@ -10,7 +10,7 @@ class Player;
 
 class Strategy {
  public:
- virtual bool determineAction(Player &player, std::vector<Deck> &heads) = 0;
+ virtual void  determineAction(Player &player, std::vector<Deck> &heads, int &turnsLeft, bool testingMode) = 0;
 };
 
 #endif

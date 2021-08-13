@@ -10,9 +10,11 @@ class Deck {
  int deckSize;
  std::vector<std::vector<std::string>> deck;
  void swap(int pos1, int pos2);
+ const std::vector<std::string> suitList {"H","D","S","C"};
+ const std::vector<std::string> cardList {"2","3","4","5","6","7","8","9","10","J","Q","K","A"};
  public:
- std::vector<std::string> getCardAt(int pos);
  void clearDeck();
+ std::vector<std::string> getCardAt(int pos);
  static std::string getFaceValue(std::string card);
  void removeBack();
  void shuffle();
@@ -20,8 +22,10 @@ class Deck {
  void addCard(std::vector<std::string> card);
  void generatePlayingCards(int numPlayers);
  void printDeck();
- void distributeCards(std::vector<Player> &players);
+ void distributeCards(std::vector<Player> &players, int deckSize);
  int getSize();
+ bool isValidValue(std::string value);
+ bool isValidSuit(std::string suit);
 };
 
 #endif

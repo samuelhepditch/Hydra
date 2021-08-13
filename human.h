@@ -5,7 +5,7 @@
 
 class Human: public Strategy {
  public:
- bool determineAction(Player &player, std::vector<Deck> &heads) override; 
+ void determineAction(Player &player, std::vector<Deck> &heads, int &turnsLeft, bool testingMode) override; 
 };
 
 #endif

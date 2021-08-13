@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-std=c++14 -MMD
-OBJECTS=main.o gameplay.o player.o deck.o human.o computer.o strategy.o
+OBJECTS=main.o gameplay.o player.o deck.o human.o strategy.o
 DEPENDS=${OBJECTS:.o=.d}
 EXEC=hydra
 

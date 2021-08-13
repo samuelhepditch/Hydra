@@ -14,49 +14,50 @@ Player::Player( Strategy *strategy ){
 };
 
 
+/* returns num cards in hand ( 0  or 1 ) */
+int Player::handSize(){
+  if ( hand.empty() ) return 0;
+  return 1;
+}
+
 /* add head to discard pile, create two new heads */
-void Player::cutHead(vector<Deck> &heads,vector<string> handPlayed) { 
-  addCard(hand,"discardPile");
+void Player::cutHead(vector<Deck> &heads,vector<string> handPlayed, bool testingMode) { 
+  discardPile.addCard(handPlayed);
   if ( reserve.getSize() != 0 ) {
     drawPile.addCard(reserve.getTopCard());
     reserve.removeBack();
   }
   Deck head1;
   Deck head2;
-  setHand();
-  if ( hand[0] == "Joker" ) {
-   hand[0] = "2";
-   hand[1] = "J";
-   hand[2] = "2"; 
+  setHand(testingMode);
+  if ( hand.empty() == false ) {
+    if ( hand[0] == "Joker" ) {
+      hand[0] = "2";
+      hand[1] = "J";
+      hand[2] = "2"; 
+    }
+    head1.addCard(playHand());
+    heads.emplace_back(head1);
   }
-  head1.addCard(playHand());
-  heads.emplace_back(head1);
-  setHand();
-  if ( hand[0] == "Joker" ) {
-    hand[0] = "2";
-    hand[1] = "J";
-    hand[2] = "2";
+  setHand(testingMode);
+  if ( hand.empty() == false ) {
+    if ( hand[0] == "Joker" ) {
+      hand[0] = "2";
+      hand[1] = "J";
+      hand[2] = "2";
+    }
+    head2.addCard(playHand());
+    heads.emplace_back(head2);
   }
-  head2.addCard(playHand());
-  heads.emplace_back(head2);
-}
-
-
-/* returns the discard pile to the draw pile  */
-void Player::integrateDiscardPile(){
-  drawPile.shuffle();
-  int size = discardPile.getSize();
-  for ( int i = 0; i < size; i++ ) {
-    drawPile.addCard(reserve.getTopCard());
-    discardPile.removeBack();
-  }  
 }
 
 
 /* return reserve to the top of the drawpile */
 void Player::returnReserve(){
-  drawPile.addCard(reserve.getTopCard());
-  reserve.removeBack();
+  if ( reserve.getSize() != 0 ) {
+    drawPile.addCard(reserve.getTopCard());
+    reserve.removeBack();
+  }
 }
 
 /* assigns a new strategy to this player (human or computer). */
@@ -66,9 +67,11 @@ void Player::setStrategy( Strategy *strategy ) {
 }
 
 
-/* executes turn by leveraging a human or computer strategy. */ 
-bool Player::executeTurn( vector<Deck> &heads ) {
-   return strategy_->determineAction(*this,heads); 
+/* executes turn by leveraging a human or computer strategy. Returns true if player has won. */ 
+bool Player::executeTurn(vector<Deck> &heads, int &turnsLeft, bool testingMode) {
+   strategy_->determineAction(*this,heads,turnsLeft,testingMode); 
+   if ( drawPile.getSize() + discardPile.getSize() + reserve.getSize()  == 0 ) { return true; }
+   return false;
 }
 
 
@@ -92,9 +95,50 @@ vector<string> Player::playHand(){
 }
 
 
-/* picks up top card from a players deck and stores in hand.  */
-void Player::setHand() {
+/* picks up top card from a players deck and stores in hand. */
+void Player::setHand(bool testingMode) {
+   if ( drawPile.getSize() == 0 ) {
+     if ( discardPile.getSize() != 0 ){
+       discardPile.shuffle();
+       int size = discardPile.getSize();
+       for ( int i = 0; i < size; i++ ) {
+         drawPile.addCard(discardPile.getTopCard());
+         discardPile.removeBack();
+       }    
+      } else if ( reserve.getSize() != 0 ) {
+        drawPile.addCard(reserve.getTopCard());
+        reserve.removeBack();
+     } else {
+       return;
+     }
+  }
   hand = drawPile.getTopCard();
+  if ( testingMode == true ) {
+    bool correct = false;
+    string val;
+    string suit;
+    while (!correct) {
+     cout << "Card value?" << endl;
+     cin >> val;
+     if ( drawPile.isValidValue(val) || val == "Joker" ) {
+      correct = true;
+     }
+    }
+    if ( val != "Joker") {
+     correct = false;
+    }
+    while(!correct) {
+      cout << "Suit?" << endl;
+      cin >> suit;
+      if ( drawPile.isValidSuit(suit) ) {
+        correct = true;
+      }
+    }
+    cout << endl;
+    hand[0] = val;
+    hand[1] = suit;
+    hand[2] = Deck::getFaceValue(val);
+  } 
   drawPile.removeBack();
 }
 

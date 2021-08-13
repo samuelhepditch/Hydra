@@ -9,17 +9,17 @@
 
 class Gameplay {
  void addPlayers(int numPlayers);
- void setUp(int numPlayers);
- void printPlayers(std::string type, int turnsTaken = 0);
- void printMove();
+ void setUp(int numPlayers, int deckSize);
+ void printPlayers(std::string type, int turnsLeft = 0);
+ void printMove(bool testingMode);
  void printHeads();
  bool didWin(Player &player);
  std::vector<Deck> heads;
  std::vector<Player> players;
  int activePlayer = -1;
- public:
  int getHeadCount();
- void play(int numPlayers);
+ public:
+ void play(int numPlayers, bool testingMode = false, int deckSize = 54);
 };
 
 

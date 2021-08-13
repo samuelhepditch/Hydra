@@ -1,1 +1,0 @@
-strategy.o: strategy.cc

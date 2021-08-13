@@ -75,10 +75,30 @@ void Deck::addCard(vector<string> card){
 }
 
 
+/* returns true if passed value is in cardList */
+bool Deck::isValidValue(string value) {
+  for ( int i = 0; i < cardList.size(); i++ ) {
+    if ( value == cardList[i] ) {
+      return true; 
+    }
+  }
+  return false;
+}
+
+
+/* returns true if passed value is in suitList */
+bool Deck::isValidSuit(string suit) {
+  for ( int i = 0; i < suitList.size(); i++ ) {
+    if ( suit == suitList[i] ) {
+      return true;
+    } 
+  }
+  return false;
+}
+
+
 /* creates a single deck of as many standard 54 card decks as there are players. */
 void Deck::generatePlayingCards(int numPlayers){
-  vector<string> suitList {"H","D","S","A"};
-  vector<string> cardList {"2","3","4","5","6","7","8","9","10","J","Q","K","A"};
   for ( int h = 0; h < numPlayers; h++ ) {
     for ( int i = 0; i < cardList.size(); i++ ) {
       for ( int j = 0; j < suitList.size(); j++ ) {
@@ -97,9 +117,9 @@ void Deck::generatePlayingCards(int numPlayers){
 }
 
 
-void Deck::distributeCards(vector<Player> &players){
+void Deck::distributeCards(vector<Player> &players, int deckSize){
   int index = 0;
-  while ( index < deck.size() ) {
+  while ( index < deck.size() && index < (deckSize * players.size()) ) {
     for ( int j = 0; j < players.size(); j++ ){
       players[j].addCard(deck[index],"drawPile");
       index += 1;

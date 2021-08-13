@@ -2,7 +2,6 @@
 #include "player.h"
 #include "deck.h"
 #include "human.h"
-#include "computer.h"
 #include <vector>
 #include <string> 
 #include <iostream>
@@ -13,20 +12,10 @@ using namespace std;
 
 /* initializes the list of participants */
 void Gameplay::addPlayers(int numPlayers){
-  cout << "How many human players?" << endl;
-  string numHumanPlayers;
-  cin >> numHumanPlayers;
-  cout << endl;
   for ( int i = 0; i < numPlayers; i++ ) {
-    if ( i < stoi(numHumanPlayers) ) { 
-      Human *newHuman = new Human;
-      Player newPlayer { newHuman }; 
-      players.emplace_back(newPlayer);
-    } else {
-      Computer *newComputer = new Computer;
-      Player newPlayer { newComputer };
-      players.emplace_back(newPlayer);
-    }
+    Human *newHuman = new Human;
+    Player newPlayer { newHuman }; 
+    players.emplace_back(newPlayer);
   }
 }
 
@@ -42,11 +31,11 @@ int Gameplay::getHeadCount() {
 
 
 /* adds players to game, distributes cards to each player, creates initial head. */
-void Gameplay::setUp(int numPlayers){
+void Gameplay::setUp(int numPlayers,int deckSize){
   addPlayers(numPlayers);
   Deck playingCards;
   playingCards.generatePlayingCards(numPlayers);
-  playingCards.distributeCards(players);
+  playingCards.distributeCards(players,deckSize);;
 }
 
 
@@ -64,14 +53,14 @@ void Gameplay::printHeads(){
 
 
 /* prints out all players */
-void Gameplay::printPlayers(string type, int turnsTaken) {
+void Gameplay::printPlayers(string type, int turnsLeft) {
   cout << "Players:" << endl;
-  for ( int i = 0; i < players.size() ; i++ ) {
+  for ( int i = 0; i < players.size(); i++ ) {
     int drawSize = players[i].getDeckSize("drawPile");
     int discardSize = players[i].getDeckSize("discardPile");;
     cout << "Player " << i + 1 << ": " << drawSize + discardSize << " (" << drawSize << " draw, " <<  discardSize << " discard)";
     if ( activePlayer == i && type == "extend" ) {  
-      cout << " + 1 in hand, " << getHeadCount() - turnsTaken - 1 << " remaining, ";
+      cout << " + " << players[i].handSize() << "  in hand, " << turnsLeft - 1 << " remaining, ";
       cout << players[i].getDeckSize("Reserve") << " in reserve"; 
     }
     cout << endl;
@@ -82,8 +71,8 @@ void Gameplay::printPlayers(string type, int turnsTaken) {
 
 
 /* prints out a statement asking the player to move */
-void Gameplay::printMove() {
-  players[activePlayer].setHand();
+void Gameplay::printMove(bool testingMode) {
+  players[activePlayer].setHand(testingMode);
   vector<string> playerHand = players[activePlayer].getHand();
   cout << "Player " << activePlayer + 1 << " you are holding a " << playerHand[0] << playerHand[1] << ". Your move?" << endl;
 }
@@ -101,9 +90,9 @@ bool Gameplay::didWin(Player &player){
 
 
 /* main logic for each game of hydra */
-void Gameplay::play(int numPlayers) {
-  setUp(numPlayers);
-  players[activePlayer + 1].setHand();
+void Gameplay::play(int numPlayers, bool testingMode, int deckSize) {
+  setUp(numPlayers,deckSize);
+  players[activePlayer + 1].setHand(testingMode);
   Deck d;
   d.addCard(players[activePlayer + 1].playHand());
   heads.emplace_back(d);
@@ -113,28 +102,18 @@ void Gameplay::play(int numPlayers) {
   while(!done){
     cout << "Player " << activePlayer + 1 << ", it is your turn." << endl << endl << endl;
     int turnsLeft = getHeadCount();
-    int turnsTaken = 0;
     while ( turnsLeft > 0 ) {  
-     if ( players[activePlayer + 1].getDeckSize("drawPile") == 0 ) {
-        if ( players[activePlayer + 1].getDeckSize("discardPile") != 0 ) {
-         players[activePlayer + 1].integrateDiscardPile();
-        } else {
-         return players[activePlayer + 1].returnReserve();
-       }
-      }
       printHeads();
-      printPlayers("extend",turnsTaken);
-      printMove();
-      if ( players[activePlayer].executeTurn(heads) ) { break; }
-      turnsTaken++;
-      turnsLeft = getHeadCount() - turnsTaken;
-      if ( didWin(players[activePlayer]) ) { 
+      printPlayers("extend",turnsLeft);
+      printMove(testingMode);
+      if ( players[activePlayer].executeTurn(heads,turnsLeft,testingMode) ) {
         done = true;
         break;
       }
       printHeads();
       printPlayers("basic");
     }
+    players[activePlayer].returnReserve();
     if ( activePlayer + 1 == numPlayers ) {
       activePlayer = 0;
     }
@@ -142,6 +121,7 @@ void Gameplay::play(int numPlayers) {
       activePlayer += 1;
     };
   }
+  cout << "Player " << activePlayer + 1 << " wins!" << endl;
 }
 
 
